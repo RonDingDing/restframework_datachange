@@ -1,0 +1,12 @@
+MANIFEST.in
+README.md
+requirements.txt
+setup.py
+restframework_datachange/__init__.py
+restframework_datachange/model_maker.py
+restframework_datachange/viewsets.py
+restframework_datachange.egg-info/PKG-INFO
+restframework_datachange.egg-info/SOURCES.txt
+restframework_datachange.egg-info/dependency_links.txt
+restframework_datachange.egg-info/requires.txt
+restframework_datachange.egg-info/top_level.txt
