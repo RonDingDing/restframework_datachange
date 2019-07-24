@@ -1,4 +1,4 @@
-Restframework-datachange is an enhancement of rest_framework. To use it, we must have basic understandings of Django and rest_framework.
+Restframework-datachange is an enhancement of rest_framework. To use it, we must have basic understandings of Django and rest_framework. 
 
 # 1. Installation
 
@@ -167,34 +167,42 @@ urlpatterns += router.urls
 
 ```
 my_project $ python manage.py shell
-
-
+ 
 In [1]: from movie.models import OneMovie
 
 In [2]: from movie.models import Cast
 
-In [3]: harry = Cast.objects.create(sex=1, profession='actor', foreign_name='harry')
-Out[3]: <Cast: harry>
+In [3]: daniel = Cast.objects.create(sex=1, profession='actor', foreign_name='Daniel')
 
-In [4]: harry
-Out[4]: <Cast: harry>
+In [4]: daniel
+Out[4]: <Cast: Daniel>
 
-In [5]: harry_potter = OneMovie.objects.create(name='Harry Potter', country=1)
+In [5]: emma =  Cast.objects.create(sex=2, profession='actor', foreign_name='Emma')
+ 
+In [6]: Cast.objects.all()
+Out[6]: <QuerySet [<Cast: Daniel>, <Cast: Emma>]>
 
-In [6]: harry_potter.director.add(harry)
+In [7]: david = Cast.objects.create(sex=1, profession='director', foreign_name='David')
 
-In [7]: harry_potter.actors.add(harry)
+In [8]: harry_potter_movie = OneMovie.objects.create(name='Harry Potter and the Goblet of Fire', country=2)
 
-In [8]: harry_potter.save()
+In [9]: harry_potter_movie.director.add(david)
 
-In [9]: harry_potter
-Out[9]: <OneMovie: Harry Potter>
+In [10]: harry_potter_movie.actors.add(daniel)
 
-In [10]: harry_potter.director.all()
-Out[10]: <QuerySet [<Cast: harry>]>
+In [11]: harry_potter_movie.actors.add(emma)
 
-In [11]: harry_potter.actors.all()
-Out[11]: <QuerySet [<Cast: harry>]>
+In [12]: harry_potter_movie.save()
+ 
+In [13]: harry_potter_movie
+Out[13]: <OneMovie: Harry Potter and the Goblet of Fire>
+
+In [14]: harry_potter_movie.director.all()
+Out[14]: <QuerySet [<Cast: David>]>
+
+In [15]: harry_potter_movie.actors.all()
+Out[16]: <QuerySet [<Cast: Daniel>, <Cast: Emma>]>
+
 
 ```
 
@@ -214,20 +222,21 @@ Ta da! Everything seems perfect. Below is what you'll see.
     {
         "id": 1,
         "director": [
-            "harry"
+            "David"
         ],
         "actors": [
-            "harry"
+            "Daniel",
+            "Emma"
         ],
-        "name": "Harry Potter",
-        "country": 1
+        "name": "Harry Potter and the Goblet of Fire",
+        "country": 2
     }
 ]
 ```
 
 # 3. Changing Data 
 
-We just want the name to be 'Harry' instead of 'Harry Potter'? That is to say, to change the data returned? That's when restframework_datachange comes in!
+We just want the movie ```name``` to be 'Harry' instead of 'Harry Potter and the Goblet of File'. That is to say, we want to change the data returned. That's when restframework_datachange comes in!
 
 my_project/movie/views.py
 ```python
@@ -237,16 +246,16 @@ from movie.serializers import MovieSerializer
 
 # Create your views here.
 
-class MovieAdjust(object):         # changed
-    def change_name(self, value):  # changed
-        return value.split(' ')[0] # changed
+class MovieAdjust(object):           # changed
+    def change_name(self, value):    # changed, xx = name
+        return value.split(' ')[0]   # changed
 
 class MovieViewSet(MovieAdjust, RModelViewSet):  # changed
     queryset = OneMovie.objects.all()
     serializer_class = MovieSerializer
 ```
 
-By making an ```Adjust``` object and changing inheritance to ```RModelViewSet```, we can change 'Harry Potter' to 'Harry'!
+By adding a ```change_xx``` to the ```Adjust``` object and changing inheritance to ```RModelViewSet```, we can change 'Harry Potter and the Goblet of File' to 'Harry'!
 
 
 ```
@@ -254,19 +263,20 @@ By making an ```Adjust``` object and changing inheritance to ```RModelViewSet```
     {
         "id": 1,
         "director": [
-            "harry"
+            "David"
         ],
         "actors": [
-            "harry"
+            "Daniel",
+            "Emma"
         ],
         "name": "Harry",
-        "country": 1
+        "country": 2
     }
 ]
 
 ```
 
-Now we change country code into its real name:
+Now we change the country code into respective country name:
 
 my_project/movie/views.py
 ```python
@@ -288,20 +298,21 @@ Ta da!
     {
         "id": 1,
         "director": [
-            "harry"
+            "David"
         ],
         "actors": [
-            "harry"
+            "Daniel",
+            "Emma"
         ],
         "name": "Harry",
-        "country": "UK"
+        "country": "US"
     }
 ]
 ```
 
 # 4. Adding new data based on one field
 
-We want a new field that is based on the data's original field. For example, we want a string version of ```actors```
+We want a new field that is based on the data's original field. For example, we want a string version of ```actors``` named as ```string_actors```.
 
 
 my_project/movie/views.py
@@ -317,7 +328,7 @@ class MovieAdjust(object):
         return dic[value]
     
     def add_string_actors(self, value):
-        return ', '.join(value)[:3]
+        return ', '.join(value)
 ...
 ```
 
@@ -328,14 +339,15 @@ Make an ```add_xx``` method, pass a ```value``` and modify it, and specify the s
     {
         "id": 1,
         "director": [
-            "harry"
+            "David"
         ],
         "actors": [
-            "harry"
+            "Daniel",
+            "Emma"
         ],
         "name": "Harry",
-        "country": "UK",
-        "string_actors": "har"
+        "country": "US",
+        "string_actors": "Daniel, Emma"
     }
 ]
 ```
@@ -358,7 +370,7 @@ class MovieAdjust(object):
         return dic[value]
 
     def add_string_actors(self, value):
-        return ', '.join(value)[:3]
+        return ', '.join(value)
 
     def add_detail(self, *value):  # xx = detail
         return ', '.join([str(i) for i in value])
@@ -371,20 +383,21 @@ Now you can see:
     {
         "id": 1,
         "director": [
-            "harry"
+            "David"
         ],
         "actors": [
-            "harry"
+            "Daniel",
+            "Emma"
         ],
         "name": "Harry",
-        "country": "UK",
-        "detail": "1,Harry Potter",
-        "string_actors": "har"   
+        "country": "US",
+        "detail": "2, Harry Potter and the Goblet of Fire",
+        "string_actors": "Daniel, Emma"
     }
 ]
 ```
 
-Pay attention to the ```country``` part in  ```detail```, it is the original value ```1``` instead of the modified ```UK```. Here, ```detail_src1``` goes to ```country```, so ```value[0]``` is the value of ```country``` field, ```1```. ```value[1]``` is the value of ```name```.
+Pay attention to the ```country``` part in  ```detail```, it is the original value ```1``` instead of the modified value ```UK```. Here, ```detail``` has a source field ```country```, so ```value[0]``` is the value of ```country``` field, ```1```. ```value[1]``` is the value of ```name```.
 
 You can also write the code like this:
 
@@ -408,7 +421,7 @@ class MovieAdjust(object):
         return str(country) + ', ' + str(name)
 ```
 
-Just make sure the number and the position of parameters beside ```self``` are the same as the ```src```s of your newly-named field.
+Make sure the number and the position of parameters beside ```self``` are the same as the ```src```s of your newly-named field.
 
 # 5. Meddle with other actions.
 
@@ -424,6 +437,57 @@ If you happen to know the ```retrieve```, ```create```, ```update```, ```delete`
 | create   | change a field |    reform     |         --          |
 | update   |  add a field   |    adjoin     |         lch         |
 | update   | change a field |     vary      |         --          |
+
+For example:
+
+http://127.0.0.1:8000/movie/1/ calls the ```retrieve``` method.
+
+```python
+class MovieAdjust(object):
+    string_actors_src1 = 'actors'
+    detail_src1 = 'country'  # xx = detail(list)
+    detail_src2 = 'name'     # xx = detail(list)
+    string_actors_retrieve_org1 = 'actors'  # xx = string_actors_retrieve(retrieve)
+
+    def change_name(self, value):
+        return value.split(' ')[0]
+
+    def change_country(self, value):
+        dic = {1: 'UK', 2: 'US'}
+        return dic[value]
+
+    def add_string_actors(self, value):
+        return ', '.join(value)
+
+    def add_detail(self, *value):  # xx = detail
+        return ', '.join([str(i) for i in value])
+
+    def modify_country(self, value):
+        dic = {1: 'United Kingdom', 2: 'United States'}
+        return dic[value]
+
+    def append_string_actors_retrieve(self, value):
+        return ', '.join(value)
+```
+
+
+```
+{
+    "id": 1,
+    "director": [
+        "David"
+    ],
+    "actors": [
+        "Daniel",
+        "Emma"
+    ],
+    "name": "Harry Potter and the Goblet of Fire",
+    "country": "United States",
+    "string_actors_retrieve": "Daniel, Emma"
+}
+
+```
+
 
 # 6. Show/hide a field
 
@@ -442,10 +506,10 @@ will get you:
     {
         "id": 1,
         "director": [
-            "harry"
+            "David"
         ],
-        "name": "Harry Potter",
-        "country": 1
+        "name": "Harry Potter and the Goblet of Fire",
+        "country": 2
     }
 ]
 ```
@@ -462,9 +526,10 @@ will get you:
 [
     {
         "actors": [
-            "harry"
+            "Daniel",
+            "Emma"
         ],
-        "name": "Harry Potter"
+        "name": "Harry Potter and the Goblet of Fire"
     }
 ]
 
