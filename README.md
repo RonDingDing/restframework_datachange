@@ -1,6 +1,6 @@
 Restframework-datachange is an enhancement of rest_framework. To use it, we must have basic understandings of Django and rest_framework. 
 
-# 1. Installation
+# 1. Installation.
 
 As usual, use pip:
 
@@ -10,7 +10,7 @@ $ pip install django
 $ pip install djangorestframework
 ```
 
-# 2. Before using restframework_datachange
+# 2. Before we use restframework_datachange.
 
 We make a sample restframework-support project.
 
@@ -70,7 +70,7 @@ class MovieSerializer(ModelSerializer):
         fields = "__all__"
 ```
 
-## Make views
+## Make views.
 
 my_project/movie/views.py
 ```python
@@ -86,7 +86,8 @@ class MovieViewSet(ModelViewSet):
 
 ```
 
-## Change settings
+## Change settings.
+
 my_project/my_project/settings.py
 
 ```python
@@ -159,7 +160,7 @@ router.register(r"movie", MovieViewSet, base_name="movie")
 urlpatterns += router.urls
 ```
 
-## Now we create some data for the database.
+## Create some data for the database.
 
 ```python
 my_project $ python manage.py shell
@@ -203,13 +204,13 @@ In [16]: exit()
 ```
 
 
-## Now we run the server.
+## Run the server.
 ```
 my_project $ python manage.py runserver 0.0.0.0:8000
 
 ```
 
-## Start your browser and enter ```http://127.0.0.1:8000/```, click   ```"movie": "http://127.0.0.1:8000/movie/"```
+## Start your browser and enter ```http://127.0.0.1:8000/```, click   ```"movie": "http://127.0.0.1:8000/movie/"```.
 
 Ta da! Everything seems perfect. Below is what you'll see.
 ```
@@ -229,7 +230,7 @@ Ta da! Everything seems perfect. Below is what you'll see.
 ]
 ```
 
-# 3. Changing Data 
+# 3. Change Data.
 
 We just want the movie ```"name"``` to be ```"Harry"``` instead of ```"Harry Potter and the Goblet of File"```. That is to say, we want to change the data returned. That's when restframework_datachange comes in!
 
@@ -304,7 +305,7 @@ Ta da!
 ]
 ```
 
-# 4. Adding new data based on one field
+# 4. Add new data based on one field.
 
 We want a new field that is based on the data's original field. For example, we want a string version of ```"actors"``` named as ```"string_actors"```.
 
@@ -347,7 +348,7 @@ Make an ```add_xx``` method, pass a ```value``` and modify it, and specify the s
 ]
 ```
 
-# 4. Adding new data based on two or more fields
+# 4. Add new data based on two or more fields.
 
 Suppose we want to join the ```"country"``` field and the ```"name"``` field to form a ```"detail"``` field.
 
@@ -485,7 +486,7 @@ class MovieAdjust(object):
 ```
 
 
-# 6. Show/hide a field
+# 6. Show/hide a field.
 
 If you want to show or hide a field, you can modify the action-specific ```_fields``` and ```_exclude``` property.
 
@@ -495,7 +496,7 @@ class MovieAdjust(object):
 
 ```
 
-will get you:
+will give you:
 
 ```
 [
@@ -510,13 +511,15 @@ will get you:
 ]
 ```
 
+and
+
 ```python
 class MovieAdjust(object):
     list_fields = ["actors", "name"]
 
 ```
 
-will get you:
+will give you:
 
 ```
 [
@@ -531,9 +534,9 @@ will get you:
 
 ```
 
-# 7. Turn python dict into a model
+# 7. Turn a python dict into a model.
 
-If you have a python dict and wants to turn it into a Django model, you can use ```modelmaker```.
+If you have a python dict and want to turn it into a Django model, you can use ```modelmaker```.
 ```python
 model_maker(dic, file='fake_model.py', class_name='Default', name_changer=camel_to_, default_settings=None, **config)
 ```
@@ -545,7 +548,7 @@ model_maker(dic, file='fake_model.py', class_name='Default', name_changer=camel_
 
 ```class_name``` : Model name.
 
-```name_changer``` : A method to change some string into another string. Default is a function that turns camel cases to underlines.
+```name_changer``` : A method to change some string into another. Default is a function that turns camel cases to underlines.
 
 ```default_settings```: A python dict to specify default properties settings of a type of field.
 
