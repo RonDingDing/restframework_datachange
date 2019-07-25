@@ -8,8 +8,7 @@ def camel_to_(camel):
 
 
 COMMON_FIELD_OPTIONS = {'null', 'blank', 'choices', 'db_column', 'db_index', 'db_tablespace', 'default', 'editable',
-                        'error_messages', 'help_text', 'primary_key', 'unique', 'unique_for_date', 'unique_for_month',
-                        'unique_for_year', 'verbose_name', 'validators'}
+                        'error_messages', 'help_text', 'primary_key', 'unique', 'verbose_name', 'validators'}
 
 INTEGER_FIELD_DEFAULT = {'verbose_name': '', 'help_text': '', 'null': True}
 CHAR_FIELD_DEFAULT = {'verbose_name': '', 'help_text': '', 'default': '', 'max_length': 64}
@@ -36,7 +35,8 @@ def write_common_field(key, name_changer, what, available_options, default_optio
                    if k.startswith(key + '__') or k.startswith(str(name_changer(key)) + '__')}
 
     allowed_options = COMMON_FIELD_OPTIONS | set(available_options) if available_options else COMMON_FIELD_OPTIONS
-    banned_options = set(real_config.keys()) - set(allowed_options)
+    banned_options = (set(real_config.keys()) - set(allowed_options)) | (
+    (set(default_options.keys()) - set(allowed_options)))
     # 有该字段不允许的字段选项
     if banned_options:
         raise RuntimeError("{what}Field '{key}' have wrong options {banned} ".
@@ -57,37 +57,68 @@ def write_common_field(key, name_changer, what, available_options, default_optio
                                                                 options_string=options_string)
 
 
-def write_integer_field(key, name_changer, **config):
-    return write_common_field(key, name_changer, 'models.Integer', None, INTEGER_FIELD_DEFAULT, **config)
+def write_integer_field(key, name_changer, default_settings=None, **config):
+    if default_settings and isinstance(default_settings, dict):
+        default = default_settings.get("int", INTEGER_FIELD_DEFAULT)
+    else:
+        default = INTEGER_FIELD_DEFAULT
+    return write_common_field(key, name_changer, 'models.Integer', None, default, **config)
 
 
-def write_char_field(key, name_changer, **config):
-    return write_common_field(key, name_changer, 'models.Char', ['max_length'], CHAR_FIELD_DEFAULT, **config)
+def write_char_field(key, name_changer, default_settings=None, **config):
+    if default_settings and isinstance(default_settings, dict):
+        default = default_settings.get("str", CHAR_FIELD_DEFAULT)
+    else:
+        default = CHAR_FIELD_DEFAULT
+    return write_common_field(key, name_changer, 'models.Char', ['max_length'], default, **config)
 
 
-def write_datetime_field(key, name_changer, **config):
-    return write_common_field(key, name_changer, 'models.DateTime', ['auto_now', 'auto_now_add'],
-                              DATETIME_FIELD_DEFAULT, **config)
+def write_datetime_field(key, name_changer, default_settings=None, **config):
+    if default_settings and isinstance(default_settings, dict):
+        default = default_settings.get("datetime", DATETIME_FIELD_DEFAULT)
+    else:
+        default = DATETIME_FIELD_DEFAULT
+
+    return write_common_field(key, name_changer, 'models.DateTime',
+                              ['auto_now', 'auto_now_add', 'unique_for_date', 'unique_for_month',
+                               'unique_for_year', ], default, **config)
 
 
-def write_date_field(key, name_changer, **config):
-    return write_common_field(key, name_changer, 'models.Date', ['auto_now', 'auto_now_add'],
-                              DATE_FIELD_DEFAULT, **config)
+def write_date_field(key, name_changer, default_settings=None, **config):
+    if default_settings and isinstance(default_settings, dict):
+        default = default_settings.get("date", DATE_FIELD_DEFAULT)
+    else:
+        default = DATE_FIELD_DEFAULT
+    return write_common_field(key, name_changer, 'models.Date',
+                              ['auto_now', 'auto_now_add', 'unique_for_date', 'unique_for_month',
+                               'unique_for_year', ], default, **config)
 
 
-def write_json_field(key, name_changer, **config):
-    return write_common_field(key, name_changer, 'JSON', None, JSON_FIELD_DEFAULT, **config)
+def write_json_field(key, name_changer, default_settings=None, **config):
+    if default_settings and isinstance(default_settings, dict):
+        default = default_settings.get("json", JSON_FIELD_DEFAULT)
+    else:
+        default = JSON_FIELD_DEFAULT
+    return write_common_field(key, name_changer, 'JSON', None, default, **config)
 
 
-def write_boolean_field(key, name_changer, **config):
-    return write_common_field(key, name_changer, "models.Boolean", None, BOOLEAN_FIELD_DEFAULT, **config)
+def write_boolean_field(key, name_changer, default_settings=None, **config):
+    if default_settings and isinstance(default_settings, dict):
+        default = default_settings.get("bool", BOOLEAN_FIELD_DEFAULT)
+    else:
+        default = BOOLEAN_FIELD_DEFAULT
+    return write_common_field(key, name_changer, "models.Boolean", None, default, **config)
 
 
-def write_float_field(key, name_changer, **config):
-    return write_common_field(key, name_changer, "models.Float", None, FLOAT_FIELD_DEFAULT, **config)
+def write_float_field(key, name_changer, default_settings=None, **config):
+    if default_settings and isinstance(default_settings, dict):
+        default = default_settings.get("float", FLOAT_FIELD_DEFAULT)
+    else:
+        default = FLOAT_FIELD_DEFAULT
+    return write_common_field(key, name_changer, "models.Float", None, default, **config)
 
 
-def write_model_file(dic, file, class_name, name_changer, **config):
+def write_model_file(dic, file, class_name, name_changer, default_settings=None, **config):
     if not isinstance(dic, dict):
         raise RuntimeError("Parameter dic is not an instance of python dict!")
     # 根据字典值的类型选择处理函数并分派，找不到的类型都归入write_char_field
@@ -106,13 +137,14 @@ def write_model_file(dic, file, class_name, name_changer, **config):
     string = "from django.db import models\n\n\n"
     string += "class {}(models.Model):\n".format(class_name)
     json_import = "from django.contrib.postgres.fields import JSONField\n"
+    # 防止没有 import JSONField
 
     for key, value in dic.items():
         method = type_method_map.get(type(value), write_char_field)
-        # 防止没有 import JSONField
+
         if method == write_json_field and json_import not in string:
             string = json_import + string
-        result = method(str(key), name_changer, **config)
+        result = method(str(key), name_changer, default_settings, **config)
         string += result
 
     if file:
@@ -125,7 +157,8 @@ def write_model_file(dic, file, class_name, name_changer, **config):
     return string
 
 
-def model_maker(dic, file='fake_model.py', class_name='Default', name_changer=camel_to_, **config):
+def model_maker(dic, file='fake_model.py', class_name='Default', name_changer=camel_to_, default_settings=None,
+                **config):
     """
     输出与 python 字典对应的 Django Model
     :param dic: (dict)要输入的原生 python 字典
@@ -141,8 +174,6 @@ def model_maker(dic, file='fake_model.py', class_name='Default', name_changer=ca
         yes_no = input('File {} already exists, do you want to overwrite it? [y/N]'.format(file))
         # 防止覆盖已存在的文件
         if yes_no.lower() == 'y':
-            return write_model_file(dic, file, class_name, name_changer, **config)
+            return write_model_file(dic, file, class_name, name_changer, default_settings, **config)
     else:
-        return write_model_file(dic, file, class_name, name_changer, **config)
-
- 
+        return write_model_file(dic, file, class_name, name_changer, default_settings, **config)

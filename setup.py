@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 
 setup(name='restframework_datachange',
-      version='0.0.1',
+      version='0.0.2.1',
       description='Change data in ModelViewSet',
       long_description=open('README.md', 'r').read(),
       long_description_content_type='text/markdown',

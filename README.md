@@ -20,7 +20,7 @@ $ django-admin startproject my_project
 my_project$ cd my_project
 my_project$ django-admin startapp movie
 ```
-Now we write files as followed:
+Now we write the files as followed:
 
 ## Make models.
 
@@ -28,14 +28,12 @@ my_project/movie/models.py
 ```python
 from django.db import models
 
-
-# Create your models here.
 class Cast(models.Model):
-    SEX_CHOICE = ((1, 'Male'), (2, 'Female'))
+    SEX_CHOICE = ((1, "Male"), (2, "Female"))
 
     sex = models.IntegerField(choices=SEX_CHOICE, default=1)
-    profession = models.CharField(max_length=100, default='')
-    foreign_name = models.CharField(max_length=100, default='')
+    profession = models.CharField(max_length=100, default="")
+    foreign_name = models.CharField(max_length=100, default="")
 
 
     def __str__(self):
@@ -43,12 +41,12 @@ class Cast(models.Model):
 
 
 class OneMovie(models.Model):
-    COUNTRY_CHOICE = ((1, 'USA'), (2, 'UK'))
+    COUNTRY_CHOICE = ((1, "UK"), (2, "US"))
 
-    name = models.CharField(max_length=200, default='')
-    director = models.ManyToManyField(Cast, related_name='director')
-    actors = models.ManyToManyField(Cast, related_name='actors')
-    country = models.IntegerField(default='', choices=COUNTRY_CHOICE)
+    name = models.CharField(max_length=200, default="")
+    director = models.ManyToManyField(Cast, related_name="director")
+    actors = models.ManyToManyField(Cast, related_name="actors")
+    country = models.IntegerField(default="", choices=COUNTRY_CHOICE)
 
 
     def __str__(self):
@@ -56,7 +54,7 @@ class OneMovie(models.Model):
 
 ```
 
-## Make Serializers. For usage of ```SlugRelatedField```, please turn to documents of djangorestframework
+## Make Serializers. For usage of ```SlugRelatedField```, please refer to  [the document of djangorestframework](https://www.django-rest-framework.org/api-guide/relations/#slugrelatedfield).
 
 my_project/movie/serializers.py
 ```python
@@ -65,11 +63,11 @@ from movie.models import OneMovie, Cast
 
 
 class MovieSerializer(ModelSerializer):
-    director = SlugRelatedField(slug_field='foreign_name', queryset=Cast.objects.all(), many=True)
-    actors = SlugRelatedField(slug_field='foreign_name', queryset=Cast.objects.all(), many=True)
+    director = SlugRelatedField(slug_field="foreign_name", queryset=Cast.objects.all(), many=True)
+    actors = SlugRelatedField(slug_field="foreign_name", queryset=Cast.objects.all(), many=True)
     class Meta:
         model = OneMovie
-        fields = '__all__'
+        fields = "__all__"
 ```
 
 ## Make views
@@ -81,7 +79,6 @@ from rest_framework.viewsets import ModelViewSet
 from movie.models import OneMovie
 from movie.serializers import MovieSerializer
 
-# Create your views here.
 
 class MovieViewSet(ModelViewSet):
     queryset = OneMovie.objects.all()
@@ -96,14 +93,14 @@ my_project/my_project/settings.py
 ...
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'rest_framework',
-    'movie'
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "rest_framework",    #
+    "movie"              #
 
 ]
 
@@ -152,12 +149,11 @@ from rest_framework import routers
 from movie.views import MovieViewSet
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path("admin/", admin.site.urls),
 ]
 
-
 router = routers.DefaultRouter()
-router.register(r'movie', MovieViewSet, base_name='movie')
+router.register(r"movie", MovieViewSet, base_name="movie")
 
 
 urlpatterns += router.urls
@@ -165,26 +161,26 @@ urlpatterns += router.urls
 
 ## Now we create some data for the database.
 
-```
+```python
 my_project $ python manage.py shell
  
 In [1]: from movie.models import OneMovie
 
 In [2]: from movie.models import Cast
 
-In [3]: daniel = Cast.objects.create(sex=1, profession='actor', foreign_name='Daniel')
+In [3]: daniel = Cast.objects.create(sex=1, profession="actor", foreign_name="Daniel")
 
 In [4]: daniel
 Out[4]: <Cast: Daniel>
 
-In [5]: emma =  Cast.objects.create(sex=2, profession='actor', foreign_name='Emma')
+In [5]: emma =  Cast.objects.create(sex=2, profession="actor", foreign_name="Emma")
  
 In [6]: Cast.objects.all()
 Out[6]: <QuerySet [<Cast: Daniel>, <Cast: Emma>]>
 
-In [7]: david = Cast.objects.create(sex=1, profession='director', foreign_name='David')
+In [7]: david = Cast.objects.create(sex=1, profession="director", foreign_name="David")
 
-In [8]: harry_potter_movie = OneMovie.objects.create(name='Harry Potter and the Goblet of Fire', country=2)
+In [8]: harry_potter_movie = OneMovie.objects.create(name="Harry Potter and the Goblet of Fire", country=2)
 
 In [9]: harry_potter_movie.director.add(david)
 
@@ -203,18 +199,17 @@ Out[14]: <QuerySet [<Cast: David>]>
 In [15]: harry_potter_movie.actors.all()
 Out[16]: <QuerySet [<Cast: Daniel>, <Cast: Emma>]>
 
-
+In [16]: exit()
 ```
 
 
 ## Now we run the server.
 ```
-my_project/my_project $ cd ..
 my_project $ python manage.py runserver 0.0.0.0:8000
 
 ```
 
-## Click   "movie": "http://127.0.0.1:8000/movie/"
+## Start your browser and enter ```http://127.0.0.1:8000/```, click   ```"movie": "http://127.0.0.1:8000/movie/"```
 
 Ta da! Everything seems perfect. Below is what you'll see.
 ```
@@ -236,26 +231,25 @@ Ta da! Everything seems perfect. Below is what you'll see.
 
 # 3. Changing Data 
 
-We just want the movie ```name``` to be 'Harry' instead of 'Harry Potter and the Goblet of File'. That is to say, we want to change the data returned. That's when restframework_datachange comes in!
+We just want the movie ```"name"``` to be ```"Harry"``` instead of ```"Harry Potter and the Goblet of File"```. That is to say, we want to change the data returned. That's when restframework_datachange comes in!
 
 my_project/movie/views.py
 ```python
-from restframework_datachange.viewsets import RModelViewSet # changed
+from restframework_datachange.viewsets import RModelViewSet # 
 from movie.models import OneMovie
 from movie.serializers import MovieSerializer
 
-# Create your views here.
 
-class MovieAdjust(object):           # changed
-    def change_name(self, value):    # changed, xx = name
-        return value.split(' ')[0]   # changed
+class MovieAdjust(object):           # 
+    def change_name(self, value):    # xx = name
+        return value.split(" ")[0]   # 
 
-class MovieViewSet(MovieAdjust, RModelViewSet):  # changed
+class MovieViewSet(MovieAdjust, RModelViewSet):  # 
     queryset = OneMovie.objects.all()
     serializer_class = MovieSerializer
 ```
 
-By adding a ```change_xx``` to the ```Adjust``` object and changing inheritance to ```RModelViewSet```, we can change 'Harry Potter and the Goblet of File' to 'Harry'!
+By adding a ```change_xx``` to the ```Adjust``` object and changing inheritance to ```RModelViewSet```, we change the value of the returned ```"name"``` field from ```"Harry Potter and the Goblet of File"``` to ```"Harry"```!
 
 
 ```
@@ -276,17 +270,17 @@ By adding a ```change_xx``` to the ```Adjust``` object and changing inheritance 
 
 ```
 
-Now we change the country code into respective country name:
+Now we change the ```"country"``` code into correspondent country name:
 
 my_project/movie/views.py
 ```python
 ...
 class MovieAdjust(object):         
     def change_name(self, value):   
-        return value.split(' ')[0]  
+        return value.split(" ")[0]  
 
     def change_country(self, value):
-        dic = {1: 'UK', 2: 'US'}
+        dic = {1: "UK", 2: "US"}
         return dic[value]
 ...
 ```
@@ -305,30 +299,31 @@ Ta da!
             "Emma"
         ],
         "name": "Harry",
-        "country": "US"
+        "country": "US"  
     }
 ]
 ```
 
 # 4. Adding new data based on one field
 
-We want a new field that is based on the data's original field. For example, we want a string version of ```actors``` named as ```string_actors```.
+We want a new field that is based on the data's original field. For example, we want a string version of ```"actors"``` named as ```"string_actors"```.
 
 
 my_project/movie/views.py
 ```python
 ...
 class MovieAdjust(object):
-    string_actors_src1 = 'actors'
+    string_actors_src1 = "actors"
+    
     def change_name(self, value):
-        return value.split(' ')[0]
+        return value.split(" ")[0]
 
     def change_country(self, value):
-        dic = {1: 'UK', 2: 'US'}
+        dic = {1: "UK", 2: "US"}
         return dic[value]
     
     def add_string_actors(self, value):
-        return ', '.join(value)
+        return ", ".join(value)
 ...
 ```
 
@@ -354,26 +349,26 @@ Make an ```add_xx``` method, pass a ```value``` and modify it, and specify the s
 
 # 4. Adding new data based on two or more fields
 
-Suppose we want to join the ```country``` field and the ```name``` field to form a ```detail``` field.
+Suppose we want to join the ```"country"``` field and the ```"name"``` field to form a ```"detail"``` field.
 
 ```python
 class MovieAdjust(object):
-    string_actors_src1 = 'actors'
-    detail_src1 = 'country'  # xx = detail
-    detail_src2 = 'name'     # xx = detail
+    string_actors_src1 = "actors"
+    detail_src1 = "country"  # xx = detail
+    detail_src2 = "name"     # xx = detail
 
     def change_name(self, value):
-        return value.split(' ')[0]
+        return value.split(" ")[0]
 
     def change_country(self, value):
-        dic = {1: 'UK', 2: 'US'}
+        dic = {1: "UK", 2: "US"}
         return dic[value]
 
     def add_string_actors(self, value):
-        return ', '.join(value)
+        return ", ".join(value)
 
     def add_detail(self, *value):  # xx = detail
-        return ', '.join([str(i) for i in value])
+        return ", ".join([str(i) for i in value])
 ```
 
 Now you can see:
@@ -397,35 +392,35 @@ Now you can see:
 ]
 ```
 
-Pay attention to the ```country``` part in  ```detail```, it is the original value ```1``` instead of the modified value ```UK```. Here, ```detail``` has a source field ```country```, so ```value[0]``` is the value of ```country``` field, ```1```. ```value[1]``` is the value of ```name```.
+Pay attention to the ```"country"``` part in  ```"detail"```, it is the original value ```2``` instead of the modified value ```"US"```. Here, ```"detail"``` has source fields ```"country"``` and ```"name"```, so ```value[0]``` is the value of ```"country"``` field, ```2```. And ```value[1]``` is the value of ```"name"```, ```"Harry Potter and the Goblet of Fire"```.
 
 You can also write the code like this:
 
 ```python
 class MovieAdjust(object):
-    string_actors_src1 = 'actors'
-    detail_src1 = 'country'
-    detail_src2 = 'name'
+    string_actors_src1 = "actors"
+    detail_src1 = "country"
+    detail_src2 = "name"
 
     def change_name(self, value):
-        return value.split(' ')[0]
+        return value.split(" ")[0]
 
     def change_country(self, value):
-        dic = {1: 'UK', 2: 'US'}
+        dic = {1: "UK", 2: "US"}
         return dic[value]
 
     def add_string_actors(self, value):
-        return ', '.join(value)[:3]
+        return ", ".join(value)
 
     def add_detail(self, country, name): 
-        return str(country) + ', ' + str(name)
+        return str(country) + ", " + str(name)
 ```
 
-Make sure the number and the position of parameters beside ```self``` are the same as the ```src```s of your newly-named field.
+Make sure the number and the position of parameters beside ```self``` are the same as the ```src```s of your newly-created field.
 
 # 5. Meddle with other actions.
 
-If you happen to know the ```retrieve```, ```create```, ```update```, ```delete``` actions of restframework, you can meddle your return by creating ```Adjust``` objects based on the tables below: 
+If you happen to know the ```retrieve```, ```create```, ```update```,  actions of restframework, you can meddle your return by creating ```Adjust``` objects based on the tables below: 
 
 | Actions  |  Modification  | Method Prefix | Source Field Suffix |
 |:---------|:--------------:|:-------------:|:-------------------:|
@@ -444,30 +439,31 @@ http://127.0.0.1:8000/movie/1/ calls the ```retrieve``` method.
 
 ```python
 class MovieAdjust(object):
-    string_actors_src1 = 'actors'
-    detail_src1 = 'country'  # xx = detail(list)
-    detail_src2 = 'name'     # xx = detail(list)
-    string_actors_retrieve_org1 = 'actors'  # xx = string_actors_retrieve(retrieve)
+    string_actors_src1 = "actors"
+    detail_src1 = "country"  # xx = detail(list)
+    detail_src2 = "name"     # xx = detail(list)
+    string_actors_retrieve_org1 = "actors"  # yy = string_actors_retrieve(retrieve)
 
     def change_name(self, value):
-        return value.split(' ')[0]
+        return value.split(" ")[0]
 
     def change_country(self, value):
-        dic = {1: 'UK', 2: 'US'}
+        dic = {1: "UK", 2: "US"}
         return dic[value]
 
     def add_string_actors(self, value):
-        return ', '.join(value)
+        return ", ".join(value)
 
     def add_detail(self, *value):  # xx = detail
-        return ', '.join([str(i) for i in value])
+        return ", ".join([str(i) for i in value])
 
     def modify_country(self, value):
-        dic = {1: 'United Kingdom', 2: 'United States'}
+        dic = {1: "United Kingdom", 2: "United States"}
         return dic[value]
 
-    def append_string_actors_retrieve(self, value):
-        return ', '.join(value)
+    def append_string_actors_retrieve(self, value): 
+        # yy = string_actors_retrieve
+        return ", ".join(value)
 ```
 
 
@@ -495,7 +491,7 @@ If you want to show or hide a field, you can modify the action-specific ```_fiel
 
 ```python
 class MovieAdjust(object):
-    list_exclude = ['actors']
+    list_exclude = ["actors"]
 
 ```
 
@@ -516,7 +512,7 @@ will get you:
 
 ```python
 class MovieAdjust(object):
-    list_fields = ['actors', 'name']
+    list_fields = ["actors", "name"]
 
 ```
 
@@ -535,19 +531,25 @@ will get you:
 
 ```
 
-# 7. Turn json into a model
+# 7. Turn python dict into a model
 
-If you have a python dic and wants to turn it into a Django model, use modelmaker
+If you have a python dict and wants to turn it into a Django model, you can use ```modelmaker```.
 ```python
-model_maker(dic, file='fake_model.py', class_name='Default', name_changer=camel_to_, **config)
+model_maker(dic, file='fake_model.py', class_name='Default', name_changer=camel_to_, default_settings=None, **config)
 ```
 
 
-```dic``` A python dic.
-```file``` The model will be written in the file specified. Passed as '' will only return a printed version.
-```class_name``` Model name.
-```name_changer``` A method to change some string into other string. Default is a function that turns camel cases to underlines.
-```config``` Set the properties of model.
+```dic``` : A python dic.
+
+```file``` : The model will be written in the file specified. Passed as ```""``` and it will only return a printed version.
+
+```class_name``` : Model name.
+
+```name_changer``` : A method to change some string into another string. Default is a function that turns camel cases to underlines.
+
+```default_settings```: A python dict to specify default properties settings of a type of field.
+
+```config``` : Set the properties of model. For detail, please refer to [the documents of django](https://docs.djangoproject.com/en/2.2/ref/models/fields/).
 
 Example:
 
@@ -557,29 +559,29 @@ from restframework_datachange.model_maker import model_maker
 from datetime import datetime
 
 dic = {
-    'apple': 1,                  # IntegerField
-    'boy': 1.2,                  # FloatField
-    'cat': 'string',             # CharField
-    'dog': [{'json': 1}],        # JSONField
-    'elephant': datetime.now(),   # DatetimeField
-    'changed': 'string'
+    "apple": 1,                  # IntegerField
+    "boy": 1.2,                  # FloatField
+    "cat": "string",             # CharField
+    "dog": [{"json": 1}],        # JSONField
+    "elephant": datetime.now(),  # DatetimeField
+    "changed": "string"
 }
 
 config = {
-    'apple__choices': [(1, 'UK'), (2, 'US')],
-    'boy__null': True,
-    'cat__max_length': 20,
-    'dog__verbose_name': 'Dog',
-    'elephant__auto_now': True
+    "apple__choices": [(1, "UK"), (2, "US")],
+    "boy__null": True,
+    "cat__max_length": 20,
+    "dog__verbose_name": "Dog",
+    "elephant__auto_now": True
 }
 
 def name_changer(string):
-    li = ['apple', 'boy', 'cat', 'dog', 'elephant']
+    li = ["apple", "boy", "cat", "dog", "elephant"]
     if string not in li:
-        return 'fog'
+        return "fog"
     return string
 
-print(model_maker(dic, file='', class_name='M', name_changer=name_changer, **config))
+print(model_maker(dic, file="", class_name="M", name_changer=name_changer, **config))
 
 
 ```
@@ -592,7 +594,7 @@ from django.db import models
 
 
 class M(models.Model):
-    apple = models.IntegerField(verbose_name="", help_text="", null=True, choices=[(1, 'UK'), (2, 'US')])
+    apple = models.IntegerField(verbose_name="", help_text="", null=True, choices=[(1, "UK"), (2, "US")])
     boy = models.FloatField(verbose_name="", help_text="", null=True)
     cat = models.CharField(verbose_name="", help_text="", default="", max_length=20)
     dog = JSONField(verbose_name="Dog", help_text="", null=True, blank=True)
@@ -601,3 +603,35 @@ class M(models.Model):
 
 
 ```
+
+You can change the default settings of ```model_maker``` by passing a python dict to the ```default_settings``` parameter.
+
+```python
+dic = {"apple": 1}                  # IntegerField
+
+print(model_maker(dic, file="", class_name="AppleCart", default_settings={"int": {"null":True}}))
+```
+
+will give you:
+```python
+from django.db import models
+
+
+class AppleCart(models.Model):
+    apple = models.IntegerField(null=True)
+```
+
+Default settings for different types are as followed:
+
+```python
+{
+    "int": {"verbose_name": "", "help_text": "", "null": True},
+    "str": {"verbose_name": "", "help_text": "", "default": "", "max_length": 64},
+    "datetime": {"verbose_name": "", "help_text": "", "auto_now": False, "auto_now_add": False},
+    "date": {"verbose_name": "", "help_text": "", "auto_now": False, "auto_now_add": False},
+    "json": {"verbose_name": "", "help_text": "", "null": True, "blank": True},
+    "bool": {"verbose_name": "", "help_text": "", "null": True},
+    "float": {"verbose_name": "", "help_text": "", "null": True}
+}
+```
+
