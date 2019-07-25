@@ -210,7 +210,7 @@ my_project $ python manage.py runserver 0.0.0.0:8000
 
 ```
 
-## Start your browser and enter ```http://127.0.0.1:8000/```, click   ```"movie": "http://127.0.0.1:8000/movie/"```.
+## Start your browser and enter ```http://127.0.0.1:8000/```. Click   ```"movie": "http://127.0.0.1:8000/movie/"```.
 
 Ta da! Everything seems perfect. Below is what you'll see.
 ```
@@ -467,6 +467,7 @@ class MovieAdjust(object):
         return ", ".join(value)
 ```
 
+will give you:
 
 ```
 {
@@ -489,6 +490,8 @@ class MovieAdjust(object):
 # 6. Show/hide a field.
 
 If you want to show or hide a field, you can modify the action-specific ```_fields``` and ```_exclude``` property.
+
+Back to http://127.0.0.1:8000/movie/
 
 ```python
 class MovieAdjust(object):
